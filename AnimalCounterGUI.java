@@ -1,124 +1,116 @@
-package animalcounter;
+package animalCounter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 public class AnimalCounterGUI extends JFrame {
+    private static final long serialVersionUID = 1L;   // fixes the warning
 
     // model
     private final Sheep sheep = new Sheep();
     private final Alligator gator = new Alligator(sheep);
 
-    // view
+    // view components
     private final JLabel welcomeLbl = new JLabel("Animal Counter");
     private final JLabel gatorLbl = new JLabel("Alligators: 0");
     private final JLabel sheepLbl = new JLabel("Sheep: 0");
 
-    private final JButton addGatorBtn = new JButton("Add Alligator (+1)");
-    private final JButton addSheepBtn = new JButton("Add Sheep (+2)");
+    private final JButton addGatorBtn = new JButton("Add Alligator");
+    private final JButton addSheepBtn = new JButton("Add Sheep");
     private final JButton displayBtn = new JButton("Display Counts");
     private final JButton resetBtn = new JButton("Reset Counts");
     private final JButton exitBtn = new JButton("Exit");
 
-    private final JRadioButton rbGator = new JRadioButton("Alligator", true);
-    private final JRadioButton rbSheep = new JRadioButton("Sheep");
+    private final JRadioButton gatorRadio = new JRadioButton("Alligator");
+    private final JRadioButton sheepRadio = new JRadioButton("Sheep");
 
     public AnimalCounterGUI() {
-        super("Week 9 - Animal Counter");
+        // basic frame setup
+        setTitle("Animal Counter");
+        setLayout(new BorderLayout());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(420, 220);
+        setSize(400, 250);
         setLocationRelativeTo(null);
 
-        // radio group
+        // top panel
+        JPanel topPanel = new JPanel();
+        topPanel.add(welcomeLbl);
+
+        // center panel with labels
+        JPanel centerPanel = new JPanel(new GridLayout(2, 1));
+        centerPanel.add(gatorLbl);
+        centerPanel.add(sheepLbl);
+
+        // button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.add(addGatorBtn);
+        buttonPanel.add(addSheepBtn);
+        buttonPanel.add(displayBtn);
+        buttonPanel.add(resetBtn);
+        buttonPanel.add(exitBtn);
+
+        // radio panel
+        JPanel radioPanel = new JPanel();
         ButtonGroup group = new ButtonGroup();
-        group.add(rbGator);
-        group.add(rbSheep);
+        group.add(gatorRadio);
+        group.add(sheepRadio);
+        radioPanel.add(gatorRadio);
+        radioPanel.add(sheepRadio);
 
-        // layout: simple BorderLayout with a compact grid center
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        top.add(welcomeLbl);
+        // add panels to frame
+        add(topPanel, BorderLayout.NORTH);
+        add(centerPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+        add(radioPanel, BorderLayout.WEST);
 
-        JPanel center = new JPanel(new GridLayout(3, 2, 6, 6));
-        center.add(gatorLbl);
-        center.add(sheepLbl);
-        center.add(addGatorBtn);
-        center.add(addSheepBtn);
-        center.add(displayBtn);
-        center.add(resetBtn);
-
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottom.add(new JLabel("Reset:"));
-        bottom.add(rbGator);
-        bottom.add(rbSheep);
-        bottom.add(exitBtn);
-
-        setLayout(new BorderLayout(8, 8));
-        add(top, BorderLayout.NORTH);
-        add(center, BorderLayout.CENTER);
-        add(bottom, BorderLayout.SOUTH);
-
-        // single handler for all buttons
-        ButtonHandler handler = new ButtonHandler();
+        // event handler (inner class)
+        ActionListener handler = new ButtonHandler();
         addGatorBtn.addActionListener(handler);
         addSheepBtn.addActionListener(handler);
         displayBtn.addActionListener(handler);
         resetBtn.addActionListener(handler);
         exitBtn.addActionListener(handler);
-
-        // initial display
-        updateLabels();
     }
 
-    private void updateLabels() {
-        gatorLbl.setText("Alligators: " + gator.getCount());
-        sheepLbl.setText("Sheep: " + sheep.getCount());
-    }
-
-    // show messages required by the spec
-    private void checkMessages() {
-        if (gator.getCount() > sheep.getCount()) {
-            JOptionPane.showMessageDialog(this,
-                    "Please add more sheep for the hungry alligators",
-                    "Notice", JOptionPane.INFORMATION_MESSAGE);
-        }
-        if (gator.getCount() == 0) {
-            JOptionPane.showMessageDialog(this,
-                    "No alligators now so the sheep are safe",
-                    "Notice", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
+    // inner class for handling events
     private class ButtonHandler implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
 
             if (src == addGatorBtn) {
-                gator.incrementCount();    // +1 gator and -1 sheep if any
+                gator.incrementCount();
                 updateLabels();
-                checkMessages();
+                if (gator.getCount() > sheep.getCount()) {
+                    JOptionPane.showMessageDialog(null,
+                            "Please add more sheep for the hungry alligators");
+                }
             } else if (src == addSheepBtn) {
-                sheep.incrementCount();     // +2 sheep
+                sheep.incrementCount();
                 updateLabels();
-                checkMessages();
+                if (gator.getCount() == 0) {
+                    JOptionPane.showMessageDialog(null,
+                            "No alligators now so the sheep are safe");
+                }
             } else if (src == displayBtn) {
-                JOptionPane.showMessageDialog(AnimalCounterGUI.this,
-                        "Alligators: " + gator.getCount() + "\nSheep: " + sheep.getCount(),
-                        "Current Counts", JOptionPane.PLAIN_MESSAGE);
-                checkMessages();
+                JOptionPane.showMessageDialog(null,
+                        "Alligators: " + gator.getCount() + "\nSheep: " + sheep.getCount());
             } else if (src == resetBtn) {
-                if (rbGator.isSelected()) {
+                if (gatorRadio.isSelected()) {
                     gator.resetCount();
-                } else if (rbSheep.isSelected()) {
+                } else if (sheepRadio.isSelected()) {
                     sheep.resetCount();
                 }
                 updateLabels();
-                checkMessages();
             } else if (src == exitBtn) {
-                dispose();
+                System.exit(0);
             }
         }
+    }
+
+    private void updateLabels() {
+        gatorLbl.setText("Alligators: " + gator.getCount());
+        sheepLbl.setText("Sheep: " + sheep.getCount());
     }
 }
